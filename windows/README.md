@@ -1,100 +1,113 @@
-# Whisper Transcriber（Windows 版）
+# Whisper Transcriber (Windows)
 
-macOS 版 `mlx-whisper` 语音转文字工具的 **Windows 移植版**。
+A local speech-to-text desktop app for Windows. Transcribe audio/video files or
+record and transcribe **Teams (or any app) meetings** — everything runs on your
+machine, nothing is uploaded.
 
-macOS 版使用 Apple 专有的 MLX 框架（仅支持 Apple Silicon 的 Metal GPU），
-本版本把推理引擎替换为 **[faster-whisper](https://github.com/SYSTRAN/faster-whisper)（CTranslate2）**，
-可在 Windows 上使用 **CPU** 或 **NVIDIA CUDA GPU** 运行，并自动选择设备。
-
-界面、拖拽、批量处理、模型选择、语言选择、Hugging Face 缓存管理、离线本地模型加载等功能与原版保持一致。
-
----
-
-## 与 macOS 版的对应关系
-
-| 能力 | macOS 版 | Windows 版 |
-|---|---|---|
-| GUI | customtkinter + tkinterdnd2 | 相同（跨平台） |
-| 推理引擎 | `mlx-whisper`（Apple Silicon） | `faster-whisper`（CPU / CUDA） |
-| 音频解码 | 系统 FFmpeg（`brew install ffmpeg`） | PyAV 内置 FFmpeg，**无需单独安装** |
-| 模型仓库 | `mlx-community/whisper-*` | `Systran/faster-whisper-*` |
-| 硬件加速 | Metal GPU | CUDA GPU（有则自动用），否则 CPU int8 |
-| 打包 | PyInstaller → `.app` + DMG + 签名 | PyInstaller → `.exe`（免签名） |
-
-> 注意：两个版本的模型格式不同，Windows 版不能直接加载 MLX 模型，请使用 `Systran/faster-whisper-*` 系列模型。
+This is a Windows port of a macOS MLX Whisper app. The Apple-only MLX engine is
+replaced by **[faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+(CTranslate2)**, which runs on Windows **CPU** or **NVIDIA CUDA GPU** and selects
+the device automatically.
 
 ---
 
-## 快速开始（从源码运行）
+## Highlights
 
-> 支持 Python 3.9 - 3.14。已验证 `ctranslate2` / `faster-whisper` 提供了
-> Python 3.14 的预编译 wheel（`cp314`），可直接使用当前环境的 Python。
+- **File transcription**: drag & drop or browse; batch processing supported.
+- **Meeting recording**: capture system audio (other participants) + your
+  microphone (you), then auto-transcribe.
+- **Timestamped output**: writes a `.txt` (with time ranges) and a `.srt`
+  subtitle file next to each input.
+- **No FFmpeg install needed**: audio decoding is handled by the bundled PyAV.
+- **CPU or GPU**: uses NVIDIA CUDA when available, otherwise CPU (int8).
+- **Offline/corporate friendly**: local models, system trust store, cache manager.
+
+---
+
+## Quick start (run from source)
+
+> Works on Python 3.9 – 3.14 (`ctranslate2` ships a `cp314` wheel).
 
 ```powershell
-# 1. 进入 windows 目录
 cd windows
 
-# 2. 创建并激活虚拟环境
+# Create and activate a virtual environment
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# 3. 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. 运行 GUI
+# Launch the GUI
 python gui.py
 ```
 
-首次转写时会自动从 Hugging Face 下载所选模型（几百 MB 到 ~3GB 不等），下载后缓存供后续使用。
+On the first transcription the selected model is downloaded from Hugging Face
+(a few hundred MB up to ~3 GB) and cached for later use.
 
-### 命令行用法
+### Command line
 
 ```powershell
-python transcribe.py "C:\path\to\audio.mp3" --model large-v3 --language ja
+python transcribe.py "C:\path\to\audio.mp3" --model large-v3-turbo --language en
 ```
 
-- `--model`：`tiny` / `base` / `small` / `medium` / `large-v3` / `large-v3-turbo`，或 HF 仓库 id，或本地模型文件夹路径
-- `--language`：语言代码（如 `en`、`ja`、`zh`），省略则自动检测
+- `--model`: `tiny` / `base` / `small` / `medium` / `large-v3` / `large-v3-turbo`,
+  or a Hugging Face repo id, or a local model folder path.
+- `--language`: language code (e.g. `en`, `ja`, `zh`); omit for auto-detection.
 
-输出为与输入同名的 `.txt` 文件，保存在输入文件所在目录。
-
----
-
-## 录制 Teams（或任意应用）会议并转写
-
-界面里有一个 **● Record Meeting** 按钮，用于把正在开的会议直接转成文字：
-
-1. 打开并加入你的 Teams 会议。
-2. 在本工具里选好 **模型** 和 **语言**（中文选 `Chinese`，或 `Auto`）。
-3. 点 **● Record Meeting** 开始录制，按钮变红显示计时和音量条。
-4. 会议结束后点 **■ Stop & Transcribe**，工具会自动保存录音并转写。
-
-录制内容包含两路并自动混音：
-
-- **系统声音（WASAPI 环回）**：Teams 从扬声器播放的声音，即**其他参会者**。
-- **你的麦克风**：你**自己发言**的声音。
-
-> 录音文件保存在 `C:\Users\你\WhisperMeetings\meeting_YYYYMMDD_HHMMSS.wav`，
-> 转写文本 `.txt` 与之同名同目录。
-
-小贴士：
-
-- 会议全程保持本工具运行；**用扬声器外放**效果最好。若戴**耳机**，系统环回同样能录到对方声音（因为音频仍经过系统混音输出）。
-- 只想录对方、不录自己：目前默认同时录制，如需只录系统声音可告知我改成可选开关。
-- 长会议会占用一定内存（16kHz 单声道，约每小时 ~230MB×2 路），一般 1-2 小时会议没问题。
-
-## GPU 加速（可选）
-
-- 若安装了 **NVIDIA GPU + CUDA 运行库**，程序会自动使用 GPU（`float16`），速度大幅提升。
-- faster-whisper 需要 cuBLAS 与 cuDNN。GPU 环境准备可参考
-  [faster-whisper 的 GPU 说明](https://github.com/SYSTRAN/faster-whisper#gpu)。
-- 无 GPU 时自动回退到 CPU（`int8` 量化），也能正常工作，只是较慢。
-
-界面右侧「Compute:」会显示当前实际使用的设备。
+Output is written next to the input as `<name>.txt` (timestamped) and
+`<name>.srt` (subtitles).
 
 ---
 
-## 打包成可分享的安装包
+## Record and transcribe a Teams meeting
+
+The GUI has a **● Record Meeting** button:
+
+1. Join your Teams meeting.
+2. Pick a **Model** and **Language** in the app.
+3. Click **● Record Meeting** — the button turns red and shows the elapsed time
+   and a level meter.
+4. When the meeting ends, click **■ Stop & Transcribe** — the app saves the
+   recording and transcribes it automatically.
+
+Two sources are captured and mixed automatically:
+
+- **System audio (WASAPI loopback)**: what Teams plays through your speakers/
+  headset, i.e. the **other participants**.
+- **Your microphone**: your **own voice**.
+
+Recordings and transcripts are saved to
+`C:\Users\<you>\WhisperMeetings\meeting_YYYYMMDD_HHMMSS.{wav,txt,srt}`.
+
+Tips:
+
+- Keep the app running for the whole meeting; speakers or headphones both work.
+- Long meetings use some RAM (16 kHz mono, ~230 MB/hour × 2 sources); 1–2 hour
+  meetings are fine.
+
+---
+
+## Output formats
+
+- **`.txt`** — one line per segment, prefixed with a time range, e.g.
+  `[00:18:05.900 --> 00:18:08.900] meeting content`.
+- **`.srt`** — standard SubRip subtitles, usable directly as captions.
+
+---
+
+## GPU acceleration (optional)
+
+- With an **NVIDIA GPU + CUDA runtime**, the app uses the GPU automatically
+  (`float16`) for a large speed-up. See the
+  [faster-whisper GPU notes](https://github.com/SYSTRAN/faster-whisper#gpu)
+  for cuBLAS/cuDNN setup.
+- Without a GPU it falls back to CPU (`int8`). The current device is shown next
+  to **Compute:** in the UI.
+
+---
+
+## Build a shareable package
 
 ```powershell
 cd windows
@@ -102,40 +115,46 @@ cd windows
 python build.py
 ```
 
-生成物位于 `dist\WhisperTranscriber\WhisperTranscriber.exe`（onedir 形式，**不依赖 Python 环境**）。
+The result is `dist\WhisperTranscriber\WhisperTranscriber.exe` (onedir, **no
+Python required to run**).
 
-### 制作分享给同事的 zip 安装包
+### Make a zip to share with colleagues
 
 ```powershell
-# 把使用手册放进程序文件夹
-Copy-Item .\使用手册.md .\dist\WhisperTranscriber\使用手册.txt
-# 压缩成一个 zip
+Copy-Item .\USER_GUIDE.md .\dist\WhisperTranscriber\USER_GUIDE.txt
 Compress-Archive -Path .\dist\WhisperTranscriber -DestinationPath .\dist\WhisperTranscriber_v1.0.27.zip -Force
 ```
 
-得到的 `WhisperTranscriber_v1.0.27.zip`（约 90MB）即可直接发给同事：
-**解压 → 双击 `WhisperTranscriber.exe` 即可使用，无需安装任何东西**（首次转写会联网下载模型）。
+Send `WhisperTranscriber_v1.0.27.zip` (~90 MB) to a colleague:
+**unzip → double-click `WhisperTranscriber.exe`** — no installation required
+(the model downloads on first use).
 
-面向同事的完整图文说明见 [`使用手册.md`](使用手册.md)。
-
----
-
-## 离线 / 内网使用
-
-1. 访问对应模型页面，例如 <https://huggingface.co/Systran/faster-whisper-large-v3/tree/main>
-2. 下载全部文件（`config.json`、`model.bin`、`tokenizer.json`、`vocabulary.txt`）到一个文件夹
-3. 在界面点击绿色的 **Load Local...**，选择该文件夹
-
-程序内置 `truststore`，会使用系统证书库，兼容企业代理 / SSL 检查环境。
+An end-user guide is available in [`USER_GUIDE.md`](USER_GUIDE.md).
 
 ---
 
-## 常见问题
+## Offline / restricted networks
 
-- **安装 `ctranslate2` 失败**：确认使用 64 位 Python；若 Python 版本极新暂无 wheel，可改用 3.11/3.12。
-- **首次运行下载很慢 / 失败**：可能是网络或防火墙拦截 Hugging Face，可先在浏览器打开模型页面，或使用离线模式。
-- **中文识别**：语言选 `Chinese` 或命令行 `--language zh`；也可用 `Auto` 自动检测。
+1. On a machine with internet, open the model page, e.g.
+   <https://huggingface.co/Systran/faster-whisper-large-v3/tree/main>
+2. Download all files (`config.json`, `model.bin`, `tokenizer.json`,
+   `vocabulary.txt`) into a folder.
+3. In the app, click the green **Load Local...** and select that folder.
 
-## 许可证
+The app bundles `truststore`, so it uses the system certificate store and works
+behind corporate proxies / SSL inspection.
 
-MIT（沿用原项目）
+---
+
+## Troubleshooting
+
+- **`ctranslate2` install fails**: make sure you are on 64-bit Python; if your
+  Python is extremely new with no wheel yet, use 3.11/3.12.
+- **First-run download is slow or fails**: a proxy/firewall may block Hugging
+  Face — open the model page in a browser first, or use offline mode.
+- **Output turns into repeated numbers**: this is Whisper hallucination during
+  long silences (already mitigated); prefer `large-v3` / `large-v3-turbo`.
+
+## License
+
+MIT

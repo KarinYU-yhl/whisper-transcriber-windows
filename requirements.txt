@@ -1,6 +1,0 @@
-mlx-whisper
-customtkinter
-packaging
-huggingface-hub>=0.20.0
-truststore
-pyinstaller
