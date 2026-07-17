@@ -1,0 +1,8 @@
+# Windows port dependencies (no MLX / Apple-specific packages)
+faster-whisper>=1.1.0
+customtkinter
+tkinterdnd2
+huggingface-hub>=0.20.0
+truststore
+soundcard        # WASAPI loopback + microphone capture for meeting recording
+pyinstaller

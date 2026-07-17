@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+windows/.venv/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+*.manifest
+windows/dist/
+windows/build/
+windows/build_log.txt
+
+# Packaged installers / large artifacts
+*.zip
+*.dmg
+
+# Downloaded / local models
+models/
+*.bin
+*.safetensors
+*.npz
+
+# Recorded meetings & transcripts (may contain private data)
+WhisperMeetings/
+*.wav
+*.srt
+
+# App config (may contain local paths)
+.mlx_whisper_config.json
+
+# Shortcuts
+*.lnk
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Vendored macOS MLX binaries (not needed for the Windows tool)
+macos15_mlx/
