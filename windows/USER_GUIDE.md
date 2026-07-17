@@ -6,6 +6,16 @@ own PC; **no data is uploaded**.
 
 ---
 
+## Quick start (TL;DR)
+
+> **Download the zip → unzip → double-click `WhisperTranscriber.exe`.**
+> If a blue **"Windows protected your PC"** dialog appears on first launch, click
+> **More info → Run anyway** (the app is not code-signed, so this warning is
+> normal and safe). The first transcription downloads the speech model over the
+> internet. Full instructions are below.
+
+---
+
 ## 1. Install (no Python required)
 
 1. Unzip `WhisperTranscriber.zip` anywhere, e.g. `D:\WhisperTranscriber`.
@@ -13,8 +23,20 @@ own PC; **no data is uploaded**.
 3. (Optional) Right-click `WhisperTranscriber.exe` → **Send to → Desktop
    (create shortcut)** to launch it from your desktop later.
 
-> On first launch Windows SmartScreen may warn you — click
-> **More info → Run anyway**. No FFmpeg or other software is required.
+### First-launch SmartScreen warning
+
+Because the app is not code-signed, Windows may show a blue
+**"Windows protected your PC"** dialog (Publisher: Unknown). This is normal and
+does not mean anything is wrong.
+
+- **To run it:** click the **More info** link in the dialog, then click the
+  **Run anyway** button that appears.
+- **To avoid the warning entirely:** before unzipping, right-click the downloaded
+  `WhisperTranscriber_v1.0.27.zip` → **Properties** → tick **Unblock** → **OK**,
+  then unzip. (Or run in PowerShell:
+  `Get-ChildItem "<folder>\WhisperTranscriber" -Recurse | Unblock-File`.)
+
+No FFmpeg or other software is required.
 
 ---
 
