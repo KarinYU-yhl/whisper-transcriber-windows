@@ -16,6 +16,37 @@ import wave
 import numpy as np
 import soundcard as sc
 
+try:
+    import ctypes
+
+    _ole32 = ctypes.windll.ole32
+except Exception:  # pragma: no cover - non-Windows
+    _ole32 = None
+
+# COINIT_APARTMENTTHREADED; soundcard's WASAPI backend expects an STA thread.
+_COINIT_APARTMENTTHREADED = 0x2
+
+
+def _com_initialize():
+    """Initialize COM on the current thread (required by soundcard/WASAPI).
+
+    soundcard does not call CoInitialize itself, so worker threads must do it or
+    every call fails with 0x800401f0 (CO_E_NOTINITIALIZED). Returns True if this
+    thread owns the initialization and should call CoUninitialize later.
+    """
+    if _ole32 is None:
+        return False
+    hr = _ole32.CoInitializeEx(None, _COINIT_APARTMENTTHREADED)
+    # S_OK (0) / S_FALSE (1) mean we initialized (or it was already init on this
+    # thread) and must balance with CoUninitialize. RPC_E_CHANGED_MODE means the
+    # thread already had a different apartment; do not uninitialize in that case.
+    return hr in (0, 1)
+
+
+def _com_uninitialize(owned):
+    if owned and _ole32 is not None:
+        _ole32.CoUninitialize()
+
 SAMPLE_RATE = 16000  # Whisper expects 16 kHz mono
 _CHUNK = 1600        # ~0.1s per read
 
@@ -33,6 +64,7 @@ class _SourceThread(threading.Thread):
         self.peak = 0.0  # most recent chunk peak, for a simple level meter
 
     def run(self):
+        com_owned = _com_initialize()
         try:
             with self.microphone.recorder(samplerate=SAMPLE_RATE, channels=1) as rec:
                 while not self._stop.is_set():
@@ -43,6 +75,8 @@ class _SourceThread(threading.Thread):
                         self.peak = float(np.abs(mono).max())
         except Exception as e:  # pragma: no cover - hardware dependent
             self.error = str(e)
+        finally:
+            _com_uninitialize(com_owned)
 
     def stop(self):
         self._stop.set()
