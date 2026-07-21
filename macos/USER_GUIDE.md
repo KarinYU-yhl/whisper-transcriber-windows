@@ -9,10 +9,12 @@ uploaded**.
 ## Quick start (TL;DR)
 
 > **Open the `.dmg` → drag `WhisperTranscriber` into `Applications` → launch it.**
-> On the very first launch, **right-click the app → Open → Open** (the app is not
-> notarized by Apple, so this one-time step is normal and safe). The first
-> transcription downloads the speech model over the internet. Full instructions
-> below.
+> On the very first launch macOS blocks it (*"Apple could not verify…"*) because
+> the app is not notarized. Allow it once via **System Settings → Privacy &
+> Security → Open Anyway**, or run
+> `xattr -dr com.apple.quarantine /Applications/WhisperTranscriber.app` in
+> Terminal. The first transcription downloads the speech model. Full
+> instructions below.
 
 ---
 
@@ -25,14 +27,31 @@ uploaded**.
 
 ### First-launch Gatekeeper warning
 
-Because the app is not signed/notarized by Apple, macOS may say
-*"WhisperTranscriber can't be opened because it is from an unidentified
-developer"* (or *"Apple could not verify..."*). This is normal.
+Because the app is not signed/notarized by Apple, macOS blocks it on first
+launch with a message like *"Apple could not verify 'WhisperTranscriber' is free
+of malware..."* (only a **Done** button). This is normal for unsigned apps.
 
-- **To run it:** right-click (or Control-click) the app in Applications →
-  **Open** → click **Open** in the dialog. You only need to do this once.
-- If macOS still blocks it: **System Settings → Privacy & Security**, scroll to
-  the bottom, and click **Open Anyway**.
+On modern macOS (Sequoia 15+) the old "right-click → Open" trick no longer works.
+Use one of these instead:
+
+**Option 1 — System Settings (no Terminal):**
+
+1. Click **Done** on the warning.
+2. Open **System Settings → Privacy & Security**.
+3. Scroll down to the **Security** section — you'll see
+   *"WhisperTranscriber" was blocked…* — click **Open Anyway**.
+4. Confirm with Touch ID / your password.
+5. When the dialog appears again, click **Open**. You only need to do this once.
+
+**Option 2 — Terminal (most reliable):**
+
+Open **Terminal** and run this (removes the download "quarantine" flag):
+
+```bash
+xattr -dr com.apple.quarantine /Applications/WhisperTranscriber.app
+```
+
+Then double-click the app normally.
 
 No FFmpeg or other software is required.
 
