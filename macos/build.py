@@ -14,6 +14,7 @@ Produces:
     dist/WhisperTranscriber-<version>.dmg          (drag-to-Applications installer)
 """
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -75,7 +76,10 @@ if not os.path.isdir(app_path):
 
 def build_dmg():
     """Package the .app into a drag-to-Applications .dmg installer."""
-    dmg_name = f"{APP_NAME}-{APP_VERSION}.dmg"
+    # arm64 = Apple Silicon, x86_64 = Intel. Include it so the right build is
+    # obvious when several are published.
+    arch = platform.machine()
+    dmg_name = f"{APP_NAME}-{APP_VERSION}-{arch}.dmg"
     dmg_path = os.path.join("dist", dmg_name)
     staging = os.path.join("dist", "dmg_root")
 
