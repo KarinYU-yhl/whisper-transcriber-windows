@@ -9,6 +9,7 @@ __pycache__/
 venv/
 env/
 windows/.venv/
+macos/.venv/
 
 # PyInstaller build output
 build/
@@ -18,6 +19,8 @@ dist/
 windows/dist/
 windows/build/
 windows/build_log.txt
+macos/dist/
+macos/build/
 
 # Packaged installers / large artifacts
 *.zip

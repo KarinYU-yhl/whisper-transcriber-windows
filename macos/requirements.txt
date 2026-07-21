@@ -1,0 +1,10 @@
+# macOS build dependencies (no MLX / Apple-specific inference packages).
+# faster-whisper (CTranslate2) uses public Systran/faster-whisper-* models,
+# which avoids the 401 / "Repository Not Found" errors of the old MLX models.
+faster-whisper>=1.1.0
+customtkinter
+tkinterdnd2
+huggingface-hub>=0.20.0
+truststore
+soundcard        # microphone capture (system audio needs BlackHole on macOS)
+pyinstaller
